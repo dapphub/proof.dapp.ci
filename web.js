@@ -26,7 +26,7 @@ const main = ({HTTP, DOM, onion, history}) => {
     .compose(dropRepeats())
     .map(proofid => ({
       category: "boot",
-      url: `https://s3.amazonaws.com/dapphub-klab-player/boot_${proofid}.json`
+      url: `boot_${proofid}.json`
     }))
 
   const move$ = DOM
@@ -45,34 +45,38 @@ const main = ({HTTP, DOM, onion, history}) => {
     .select('boot')
     .compose(flattenSequentially)
     .map(resp => state => {
-      let data = JSON.parse(resp.text)
+      const data = JSON.parse(resp.text)
+      const coedges = Object.keys(data.edges)
+        .reduce((coedges, from) =>
+          data.edges[from]
+          .reduce((a, toO) => ({...a, [toO.to]: (a[toO.to]||[]).concat(toO)}), coedges)
+          , {})
       console.log(data);
       return {
-        nodes: [],
-        edges: [],
-        finished: {},
-        ...(state || {}),
-        ...data
+        loaded: true,
+        ...data,
+        coedges
       };
     })
 
   const remember_proofid$ = history
+    .debug()
     .map(h => state => ({
       ...state,
       proofid: h.hash.slice(1)
     }))
 
-  const view$ = view({onion});
-  const vdom$ = xs.combine(onion.state$, view$)
-    .map(([state, view]) => {
-      if(state.proofid && state.proofid.length == 64) {
-        return view
+  const vdom$ = onion.state$
+    .map(state => {
+      if(state.loaded) {
+        return view(state)
       } else {
         return div([
           input({
             type: "text"
           }),
-          button("GO")
+          button("GO"),
+          code(JSON.stringify(state, false, 2))
         ])
       }
     })

@@ -107,7 +107,7 @@ const getCodeStringFromPc = (srcs, contract, pc, trim) => {
     let root_r = root_split
       .slice(-MAX_S)
     root = root_l
-      .concat([root_split[MAX_S].match(/^\s*/)[0] + span(".hide", ["[...]"])])
+      .concat([root_split[MAX_S].match(/^\s*/)[0] + "[...]"])
       .concat(root_r)
       .join("\n")
     lines = lines
