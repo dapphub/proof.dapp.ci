@@ -1,0 +1,3 @@
+[submodule "klab"]
+	path = klab
+	url = https://github.com/dapphub/klab.git
